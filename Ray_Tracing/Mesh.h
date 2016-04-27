@@ -1,5 +1,4 @@
-#ifndef MESH_H
-#define MESH_H
+#pragma once
 
 #include <Vector>
 
@@ -15,5 +14,3 @@ private:
     std::vector<int> indices;
 
 };
-
-#endif
