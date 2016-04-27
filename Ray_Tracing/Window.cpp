@@ -38,6 +38,10 @@ void Window::run() {
     if(currentScene == nullptr) {
         throw std::exception("Must assign a current state before attempting to run the window!");
     }
+
+    displaySprite.setTexture(displayTexture);
+    displaySprite.setScale(sf::Vector2f((float)renderWindow->getSize().x / (float)buffers->width, (float)renderWindow->getSize().y / (float)buffers->height));
+
     running = true;
     loop();
     cleanup();

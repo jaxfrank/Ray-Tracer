@@ -10,6 +10,7 @@
 #include "Renderer.h"
 
 const float RayTracer::epsilon = 0.000001f;
+int RayTracer::numThreads = 8; //This number should probably be set to something different for other machines.
 
 void RayTracer::render(DisplayBuffers* buffers, Scene* scene) {
     //sf::Clock timer;
