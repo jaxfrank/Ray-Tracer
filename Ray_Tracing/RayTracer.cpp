@@ -114,14 +114,19 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
                 RayIntersectionResult result;
 
                 for(int triangleIndex = 0; triangleIndex < renderer->getTriangleCount(); triangleIndex++) {
-                    //Triangle& triangle = ;
-                    if(triangleRayIntersectionTest(scene->getCamera(), dir, renderer->getTriangle(triangleIndex), result)) {
-                        //TODO: Add check to see if this new interesection is closer to the camera than the value stored in the depth buffer
-                        int index = (i + j * buffers->width) * 4;
-                        /*triangle.a.color * result.u + triangle.b.color * result.v + triangle.c.color * result.w*/
-                        glm::vec4 color = renderer->getColor(triangleIndex, result.u, result.v, result.w);
-                        for(int k = 0; k < 4; k++) {
-                            buffers->colorBuffer[index + k] = (sf::Uint8)(color[k] * 255.0f);
+                    Triangle* triangle = renderer->getTriangle(triangleIndex);
+                    if(triangleRayIntersectionTest(scene->getCamera(), dir, triangle, result)) {
+                        glm::vec3 intersectPosition = result.u*triangle->a + result.v*triangle->b + result.w*triangle->c;
+                        float distance = glm::length(intersectPosition - scene->getCamera()->getPosition());
+                        int index = i + j * buffers->width;
+                        if(distance < buffers->depthBuffer[index]) {
+                            buffers->depthBuffer[index] = distance;
+                            index *= 4;
+                            /*triangle.a.color * result.u + triangle.b.color * result.v + triangle.c.color * result.w*/
+                            glm::vec4 color = renderer->getColor(triangleIndex, result.u, result.v, result.w);
+                            for(int k = 0; k < 4; k++) {
+                                buffers->colorBuffer[index + k] = (sf::Uint8)(color[k] * 255.0f);
+                            }
                         }
                     }
                 }

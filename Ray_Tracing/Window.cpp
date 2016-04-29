@@ -12,7 +12,9 @@ Window::Window(int width, int height, std::string title):
 title(title),
 renderWindow(new sf::RenderWindow(sf::VideoMode(width, height), title)),
 buffers(new DisplayBuffers),
-running(false)
+running(false),
+clearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)),
+clearDepth(FLT_MAX)
 {
     buffers->colorBuffer = new sf::Uint8[width * height * 4];
     buffers->depthBuffer = new float[width * height];
