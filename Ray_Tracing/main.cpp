@@ -1,36 +1,9 @@
 #include <iostream>
 
-#include <glm\glm.hpp>
-#include <glm\gtx\transform.hpp>
-#include <SFML\Graphics.hpp>
-
-#include <vector>
-
-#include "Vertex.h"
+#include "Window.h"
+#include "TestScene.h"
 
 int main(int argc, char* argv[]) {
-
-    /*
-    Camera camera;
-    camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.forward = glm::vec3(0.0f, 0.0f, -1.0f);
-    camera.fov = 60.0f;
-    */
-    /*
-    Triangle triangle;
-    Vertex a;
-    a.position = glm::vec3(0.0f, 1.0f, -5.0f);
-    a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    triangle.a = a;
-    Vertex b;
-    b.position = glm::vec3(1.0f, 1.0f, -5.0f);
-    b.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    triangle.b = b;
-    Vertex c;
-    c.position = glm::vec3(1.0f, 0.0f, -5.0f);
-    c.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    triangle.c = c;
-    */
        
     /* Move something around
     float motionX = 2.0f*glm::sin(time);
@@ -49,5 +22,13 @@ int main(int argc, char* argv[]) {
     translated = transform * glm::vec4(temp.c.position, 1.0f);
     temp.c.position = glm::vec3(translated.x, translated.y, translated.z);
     */
+
+    Window* window = new Window(854, 480, "The Ray Caster!");
+    window->addScene(new TestScene(window, "TestScene"));
+    window->setFrameCap(60);
+    window->setCurrentScene("TestScene");
+
+    window->run();
+
     return 0;
 }

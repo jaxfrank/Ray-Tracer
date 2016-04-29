@@ -2,6 +2,8 @@
 
 #include <glm\glm.hpp>
 #include <SFML\Graphics.hpp>
+#include <mutex>
+#include <thread>
 
 struct DisplayBuffers;
 class Scene;
@@ -27,11 +29,15 @@ private:
         float w;
     };
 
+    static glm::vec3* screenRays;
+
     static const float epsilon;
 
     static int numThreads;
 
     static void traceRegion(DisplayBuffers* buffers, Scene* scene, const int startRow, const int numRows);
-    static bool triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle& triangle, RayIntersectionResult& result);
+    static bool triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle* triangle, RayIntersectionResult& result);
+
+    
 };
 

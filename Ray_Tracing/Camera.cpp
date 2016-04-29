@@ -3,11 +3,12 @@
 #include <glm\glm.hpp>
 
 Camera::Camera(float fov):
-fov(fov)
+fov(fov),
+position(glm::vec3(0.0f, 0.0f, 0.0f)),
+forward(glm::vec3(0.0f, 0.0f, -1.0f))
 {
     setScale(fov);
 }
-
 
 Camera::~Camera() {}
 

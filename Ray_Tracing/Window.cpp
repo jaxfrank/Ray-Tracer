@@ -1,6 +1,9 @@
 #include "Window.h"
 
 #include <exception>
+#include <iostream>
+
+#include <SFML\System.hpp>
 
 #include "Scene.h"
 #include "RayTracer.h"
@@ -48,8 +51,9 @@ void Window::run() {
 }
 
 void Window::loop() {
-    //sf::Clock clock;
-
+    sf::Clock clock;
+    float frameRateSum = 0;
+    int frameCount = 0;
     while(running) {
         sf::Event e;
         while(renderWindow->pollEvent(e)) {
@@ -61,10 +65,6 @@ void Window::loop() {
         }
 
         currentScene->update();
-
-        //time += clock.getElapsedTime().asSeconds();
-        //std::cout << "FPS: " << 1.0f / clock.getElapsedTime().asSeconds() << " Frame Time: " << clock.getElapsedTime().asSeconds() << std::endl;
-        //clock.restart();
 
         //Clear the buffers
         clearColorBuffer(clearColor);
@@ -83,6 +83,14 @@ void Window::loop() {
         renderWindow->draw(displaySprite);
         //Swap the real window's buffers
         renderWindow->display();
+
+        if(frameCount != 0) {
+            frameRateSum += 1.0f / clock.getElapsedTime().asSeconds();
+            if(frameCount % 10 == 0)
+                std::cout << "Average FPS: " << frameRateSum / frameCount << " FPS: " << 1.0f / clock.getElapsedTime().asSeconds() << " Frame Time: " << clock.getElapsedTime().asSeconds() << std::endl;
+        }
+        frameCount++;
+        clock.restart();
     }
 }
 
@@ -102,7 +110,9 @@ void Window::removeScene(std::string name) {
 }
 
 void Window::setCurrentScene(std::string name) {
-    currentScene->exit();
+    if(currentScene != nullptr) {
+        currentScene->exit();
+    }
     currentScene = scenes[name];
     if(currentScene == nullptr) throw new std::exception("Trying to switch to a scene that does not exist!"); // Need to test if this will ever actually happen or if behavior is totally different.
     currentScene->entry();

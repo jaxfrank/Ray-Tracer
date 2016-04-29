@@ -139,7 +139,9 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="RayTracer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="TriangleRenderer.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,8 +150,10 @@
     <ClInclude Include="RayTracer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="TestScene.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Triangle.h" />
+    <ClInclude Include="TriangleRenderer.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

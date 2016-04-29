@@ -10,24 +10,27 @@
 #include "Renderer.h"
 
 const float RayTracer::epsilon = 0.000001f;
-int RayTracer::numThreads = 8; //This number should probably be set to something different for other machines.
+int RayTracer::numThreads = 1; //This number should probably be set to something different for other machines.
 
 void RayTracer::render(DisplayBuffers* buffers, Scene* scene) {
     //sf::Clock timer;
+    
+    if(numThreads > 1) {
+        std::vector<std::thread*> tracers;
+        for(int i = 0; i < numThreads; i++) {
+            int startRow = i*(buffers->height / numThreads);
+            int numRows = (buffers->height / numThreads);
+            std::thread* tracer = new std::thread(RayTracer::traceRegion, buffers, scene, startRow, numRows);
+            tracers.push_back(tracer);
+        }
 
-    std::vector<std::thread*> tracers;
-
-    for(int i = 0; i < numThreads; i++) {
-        int startRow = i*(buffers->height / numThreads);
-        int numRows = (buffers->height / numThreads);
-        std::thread* tracer = new std::thread(RayTracer::traceRegion, buffers, scene, startRow, numRows);
-        tracers.push_back(tracer);
-    }
-
-    while(!tracers.empty()) {
-        tracers.back()->join();
-        delete tracers.back();
-        tracers.pop_back();
+        while(!tracers.empty()) {
+            tracers.back()->join();
+            delete tracers.back();
+            tracers.pop_back();
+        }
+    } else {
+        RayTracer::traceRegion(buffers, scene, 0, buffers->height);
     }
 
     //std::cout << timer.getElapsedTime().asSeconds() << std::endl;
@@ -51,17 +54,19 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
     glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1),angle,axis);
     */
 
-    for(int i = 0; i < buffers->width; i++) {
-        for(int j = startRow; j < startRow + numRows; j++) {
-            float x = (2 * (i + 0.5f) / buffers->width - 1) * aspectRatio * scale;
-            float y = (1 - 2 * (j + 0.5f) / buffers->height) * scale;
-            glm::vec3 dir(x, y, -1.0f);
-            glm::normalize(dir);
+    for(int rendererIndex = 0; rendererIndex < renderers.size(); rendererIndex++) {
+        Renderer* renderer = renderers[rendererIndex];
+        for(int i = 0; i < buffers->width; i++) {
+            for(int j = startRow; j < startRow + numRows; j++) {
+                float x = (2 * (i + 0.5f) / buffers->width - 1) * aspectRatio * scale;
+                float y = (1 - 2 * (j + 0.5f) / buffers->height) * scale;
+                glm::vec3 dir(x, y, -1.0f);
+                glm::normalize(dir);
 
+                RayIntersectionResult result;
 
-            RayIntersectionResult result;
-            for each(Renderer* renderer in renderers) {
                 for(int triangleIndex = 0; triangleIndex < renderer->getTriangleCount(); triangleIndex++) {
+                    //Triangle& triangle = ;
                     if(triangleRayIntersectionTest(scene->getCamera(), dir, renderer->getTriangle(triangleIndex), result)) {
                         //TODO: Add check to see if this new interesection is closer to the camera than the value stored in the depth buffer
                         int index = (i + j * buffers->width) * 4;
@@ -77,15 +82,15 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
     }
 }
 
-bool RayTracer::triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle& triangle, RayIntersectionResult& result) {
-    glm::vec3 edgeAB = triangle.b - triangle.a;
-    glm::vec3 edgeAC = triangle.c - triangle.a;
+bool RayTracer::triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle* triangle, RayIntersectionResult& result) {
+    glm::vec3 edgeAB = triangle->b - triangle->a;
+    glm::vec3 edgeAC = triangle->c - triangle->a;
     glm::vec3 p = glm::cross(direction, edgeAC);
     float determinant = glm::dot(edgeAB, p);
     if(determinant > -epsilon && determinant < epsilon) return false;
     float inverseDeterminant = 1.0f / determinant;
 
-    glm::vec3 T = camera->getPosition() - triangle.a;
+    glm::vec3 T = camera->getPosition() - triangle->a;
     float u = glm::dot(T, p) * inverseDeterminant;
 
     if(u < 0.0f || u > 1.0f) return false;

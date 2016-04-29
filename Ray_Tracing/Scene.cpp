@@ -1,11 +1,13 @@
 #include "Scene.h"
 
+#include "Renderer.h"
+
+Scene::Scene() {}
 
 Scene::Scene(Window* window, std::string name):
-    window(window),
-    name(name)
+window(window),
+name(name)
 {}
-
 
 Scene::~Scene() {
     while(renderers.size() > 0) {
@@ -14,7 +16,6 @@ Scene::~Scene() {
         }
         renderers.pop_back();
     }
-
 }
 
 void Scene::addRenderer(Renderer* renderer) {

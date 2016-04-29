@@ -11,6 +11,7 @@ class Renderer;
 
 class Scene {
 public:
+    Scene();
     Scene(Window* window, std::string name);
     ~Scene();
 
@@ -27,7 +28,7 @@ public:
     void addRenderer(Renderer* renderer);
     std::vector<Renderer*>& getRenderers() { return renderers; }
 
-private:
+protected:
     Window* window;
     std::string name;
     Camera* camera;
