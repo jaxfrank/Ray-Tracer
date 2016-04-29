@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
     translated = transform * glm::vec4(temp.c.position, 1.0f);
     temp.c.position = glm::vec3(translated.x, translated.y, translated.z);
     */
-
-    Window* window = new Window(854, 480, "The Ray Caster!");
+    
+    Window* window = new Window(1280, 720, "The Ray Caster!");
     window->addScene(new TestScene(window, "TestScene"));
     window->setFrameCap(0);
     window->setCurrentScene("TestScene");

@@ -25,6 +25,8 @@ bool RayTracer::exit = false;
 
 Scene* RayTracer::scene;
 
+bool RayTracer::doDepthTest = true;
+
 RayTracer::RayTracer(DisplayBuffers* buffers, int numThreads) {
     for(int i = 0; i < numThreads; i++) {
         int startRow = i*(buffers->height / numThreads);
@@ -57,6 +59,7 @@ void RayTracer::render(Scene* scene) {
         bool finished = completedThreads == tracers.size();
         threadCompleteMutex.unlock();
         if(finished) break;
+        //Window::globalWindow->displayBuffers();
         std::this_thread::sleep_for(sleepInterval);
     }
     completedThreads = 0;
@@ -88,8 +91,6 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
     float scale = scene->getCamera()->getScale();
     float aspectRatio = (float)buffers->width / (float)buffers->height;
 
-    std::vector<Renderer*> renderers = scene->getRenderers();
-
     /* Rotate the rays?
     glm::vec3 from_vector;
     glm::vec3 to_vector;
@@ -101,7 +102,7 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
     float angle = glm::degrees(glm::acos(cosa));
     glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1),angle,axis);
     */
-
+    std::vector<Renderer*> renderers = scene->getRenderers();
     for(int rendererIndex = 0; rendererIndex < renderers.size(); rendererIndex++) {
         Renderer* renderer = renderers[rendererIndex];
         for(int i = 0; i < buffers->width; i++) {
@@ -112,21 +113,20 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
                 glm::normalize(dir);
 
                 RayIntersectionResult result;
-
                 for(int triangleIndex = 0; triangleIndex < renderer->getTriangleCount(); triangleIndex++) {
                     Triangle* triangle = renderer->getTriangle(triangleIndex);
                     if(triangleRayIntersectionTest(scene->getCamera(), dir, triangle, result)) {
-                        glm::vec3 intersectPosition = result.u*triangle->a + result.v*triangle->b + result.w*triangle->c;
-                        float distance = glm::length(intersectPosition - scene->getCamera()->getPosition());
                         int index = i + j * buffers->width;
-                        if(distance < buffers->depthBuffer[index]) {
-                            buffers->depthBuffer[index] = distance;
-                            index *= 4;
-                            /*triangle.a.color * result.u + triangle.b.color * result.v + triangle.c.color * result.w*/
-                            glm::vec4 color = renderer->getColor(triangleIndex, result.u, result.v, result.w);
-                            for(int k = 0; k < 4; k++) {
-                                buffers->colorBuffer[index + k] = (sf::Uint8)(color[k] * 255.0f);
+                        if(doDepthTest) {
+                            glm::vec3 intersectPosition = result.u*triangle->a + result.v*triangle->b + result.w*triangle->c;
+                            float distance = glm::length(intersectPosition - scene->getCamera()->getPosition());
+
+                            if(distance < buffers->depthBuffer[index]) {
+                                buffers->depthBuffer[index] = distance;
+                                updateColorBuffer(buffers, renderer, result, index);
                             }
+                        } else {
+                            updateColorBuffer(buffers, renderer, result, index);
                         }
                     }
                 }
@@ -162,6 +162,13 @@ bool RayTracer::triangleRayIntersectionTest(const Camera* camera, const glm::vec
     }
 
     return false;
+}
+
+inline void RayTracer::updateColorBuffer(DisplayBuffers* buffers, Renderer* renderer, RayIntersectionResult& result, int index) {
+    glm::vec4 color = renderer->getColor(index, result.u, result.v, result.w);
+    for(int k = 0; k < 4; k++) {
+        buffers->colorBuffer[index*4 + k] = (sf::Uint8)(color[k] * 255.0f);
+    }
 }
 
 void RayTracer::threadComplete() {

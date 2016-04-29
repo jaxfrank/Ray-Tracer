@@ -8,6 +8,8 @@
 #include "Scene.h"
 #include "RayTracer.h"
 
+//Window* Window::globalWindow;
+
 Window::Window(int width, int height, std::string title):
 title(title),
 renderWindow(new sf::RenderWindow(sf::VideoMode(width, height), title)),
@@ -21,7 +23,9 @@ clearDepth(FLT_MAX)
     buffers->width = width;
     buffers->height = height;
 
-    rayTracer = new RayTracer(buffers, 8);
+    rayTracer = new RayTracer(buffers, 7);
+
+    //globalWindow = this;
 }
 
 Window::~Window() {
@@ -73,20 +77,11 @@ void Window::loop() {
         //Clear the buffers
         clearColorBuffer(clearColor);
         clearDepthBuffer(clearDepth);
-        
+
         //Perform the race trace
         rayTracer->render(currentScene);
 
-        //Put pixels from back buffer into "Front Buffer"
-        displayTexture.update(buffers->colorBuffer);
-
-        // RENDER THE "FRONT BUFFER" to screen
-        //Clear the real window
-        renderWindow->clear();
-        //Draw the "front buffer" to the window's back buffer
-        renderWindow->draw(displaySprite);
-        //Swap the real window's buffers
-        renderWindow->display();
+        displayBuffers();
 
         if(frameCount != 0) {
             frameRateSum += 1.0f / clock.getElapsedTime().asSeconds();
@@ -96,6 +91,19 @@ void Window::loop() {
         frameCount++;
         clock.restart();
     }
+}
+
+void Window::displayBuffers() {
+    //Put pixels from back buffer into "Front Buffer"
+    displayTexture.update(buffers->colorBuffer);
+
+    // RENDER THE "FRONT BUFFER" to screen
+    //Clear the real window
+    renderWindow->clear();
+    //Draw the "front buffer" to the window's back buffer
+    renderWindow->draw(displaySprite);
+    //Swap the real window's buffers
+    renderWindow->display();
 }
 
 void Window::cleanup() {

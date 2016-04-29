@@ -10,6 +10,7 @@ struct DisplayBuffers;
 class Scene;
 
 class Camera;
+class Renderer;
 struct Triangle;
 struct TracerParameters;
 
@@ -19,6 +20,8 @@ public:
     ~RayTracer();
 
     void render(Scene* scene);
+    
+    static void enableDepthTest(bool enabled) { doDepthTest = enabled; }
 
 private:
     struct RayIntersectionResult {
@@ -39,10 +42,13 @@ private:
     static Scene* scene;
     static std::mutex exitMutex;
     static bool exit;
+
+    static bool doDepthTest;
     
     static void tracer(DisplayBuffers* buffers, const int startRow, const int numRows);
     static void traceRegion(DisplayBuffers* buffers, Scene* scene, const int startRow, const int numRows);
     static bool triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle* triangle, RayIntersectionResult& result);
+    inline static void updateColorBuffer(DisplayBuffers* buffers, Renderer* renderer, RayIntersectionResult& result, int index);
 
     static bool shouldExit();
 };

@@ -18,6 +18,8 @@ struct DisplayBuffers {
 
 class Window {
 public:
+    //static Window* globalWindow;
+
     Window(int width, int height, std::string title);
     ~Window();
 
@@ -34,6 +36,8 @@ public:
     void setClearDepth(float clearDepth) { this->clearDepth = clearDepth; }
 
     void setFrameCap(int fps) { renderWindow->setFramerateLimit(fps); }
+
+    void displayBuffers();
 
 private:
     std::unordered_map<std::string, Scene*> scenes;
