@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 
     Window* window = new Window(854, 480, "The Ray Caster!");
     window->addScene(new TestScene(window, "TestScene"));
-    window->setFrameCap(60);
+    window->setFrameCap(0);
     window->setCurrentScene("TestScene");
 
     window->run();

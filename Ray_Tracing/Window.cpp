@@ -18,6 +18,8 @@ running(false)
     buffers->depthBuffer = new float[width * height];
     buffers->width = width;
     buffers->height = height;
+
+    rayTracer = new RayTracer(buffers, 8);
 }
 
 Window::~Window() {
@@ -71,7 +73,7 @@ void Window::loop() {
         clearDepthBuffer(clearDepth);
         
         //Perform the race trace
-        RayTracer::render(buffers, currentScene);
+        rayTracer->render(currentScene);
 
         //Put pixels from back buffer into "Front Buffer"
         displayTexture.update(buffers->colorBuffer);

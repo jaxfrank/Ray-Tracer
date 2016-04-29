@@ -8,6 +8,7 @@
 #include <glm\glm.hpp>
 
 class Scene;
+class RayTracer;
 
 struct DisplayBuffers {
     int width, height;
@@ -37,6 +38,7 @@ public:
 private:
     std::unordered_map<std::string, Scene*> scenes;
     Scene* currentScene;
+    RayTracer* rayTracer;
 
     sf::RenderWindow* renderWindow;
     sf::Texture displayTexture;

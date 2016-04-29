@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 struct DisplayBuffers;
 class Scene;
@@ -14,30 +15,35 @@ struct TracerParameters;
 
 class RayTracer {
 public:
-    static void render(DisplayBuffers* buffers, Scene* scene);
+    RayTracer(DisplayBuffers* buffers, int numThreads);
+    ~RayTracer();
 
-    static int getNumThreads() { return numThreads; }
-    static void setNumThreads(int numThreads) { RayTracer::numThreads = numThreads; }
+    void render(Scene* scene);
 
 private:
-    RayTracer() {}
-    ~RayTracer() {}
-
     struct RayIntersectionResult {
         float u;
         float v;
         float w;
     };
 
-    static glm::vec3* screenRays;
-
     static const float epsilon;
 
-    static int numThreads;
+    std::vector<std::thread*> tracers;
 
+    static std::mutex threadCompleteMutex;
+    static int completedThreads;
+    static void threadComplete();
+    static std::mutex beginWorkingMutex;
+    static bool beginWorking;
+    static Scene* scene;
+    static std::mutex exitMutex;
+    static bool exit;
+    
+    static void tracer(DisplayBuffers* buffers, const int startRow, const int numRows);
     static void traceRegion(DisplayBuffers* buffers, Scene* scene, const int startRow, const int numRows);
     static bool triangleRayIntersectionTest(const Camera* camera, const glm::vec3& direction, const Triangle* triangle, RayIntersectionResult& result);
 
-    
+    static bool shouldExit();
 };
 

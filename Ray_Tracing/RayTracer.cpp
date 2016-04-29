@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <vector>
+#include <chrono>
 
 #include "Window.h"
 #include "Scene.h"
@@ -9,31 +10,78 @@
 #include "Triangle.h"
 #include "Renderer.h"
 
+std::chrono::microseconds sleepInterval(10);
+
 const float RayTracer::epsilon = 0.000001f;
-int RayTracer::numThreads = 1; //This number should probably be set to something different for other machines.
 
-void RayTracer::render(DisplayBuffers* buffers, Scene* scene) {
-    //sf::Clock timer;
-    
-    if(numThreads > 1) {
-        std::vector<std::thread*> tracers;
-        for(int i = 0; i < numThreads; i++) {
-            int startRow = i*(buffers->height / numThreads);
-            int numRows = (buffers->height / numThreads);
-            std::thread* tracer = new std::thread(RayTracer::traceRegion, buffers, scene, startRow, numRows);
-            tracers.push_back(tracer);
-        }
+std::mutex RayTracer::threadCompleteMutex;
+int RayTracer::completedThreads = 0;
 
-        while(!tracers.empty()) {
-            tracers.back()->join();
-            delete tracers.back();
-            tracers.pop_back();
-        }
-    } else {
-        RayTracer::traceRegion(buffers, scene, 0, buffers->height);
+std::mutex RayTracer::beginWorkingMutex;
+bool RayTracer::beginWorking;
+
+std::mutex RayTracer::exitMutex;
+bool RayTracer::exit = false;
+
+Scene* RayTracer::scene;
+
+RayTracer::RayTracer(DisplayBuffers* buffers, int numThreads) {
+    for(int i = 0; i < numThreads; i++) {
+        int startRow = i*(buffers->height / numThreads);
+        int numRows = (buffers->height / numThreads);
+        tracers.push_back(new std::thread(RayTracer::tracer, buffers, startRow, numRows));
     }
+}
 
+RayTracer::~RayTracer() {
+    exitMutex.lock();
+    exit = true;
+    exitMutex.unlock();
+
+    while(tracers.size() > 0) {
+        tracers.back()->join();
+        delete tracers.back();
+        tracers.pop_back();
+    }
+}
+
+void RayTracer::render(Scene* scene) {
+    //sf::Clock timer;
+    this->scene = scene;
+    beginWorkingMutex.lock();
+    beginWorking = true;
+    beginWorkingMutex.unlock();
+
+    while(true) {
+        threadCompleteMutex.lock();
+        bool finished = completedThreads == tracers.size();
+        threadCompleteMutex.unlock();
+        if(finished) break;
+        std::this_thread::sleep_for(sleepInterval);
+    }
+    completedThreads = 0;
+    beginWorkingMutex.lock();
+    beginWorking = false;
+    beginWorkingMutex.unlock();
     //std::cout << timer.getElapsedTime().asSeconds() << std::endl;
+}
+
+void RayTracer::tracer(DisplayBuffers* buffers, const int startRow, const int numRows) {
+    bool prevBeginWorkng = false;
+    while(true) {
+        beginWorkingMutex.lock();
+        bool begin = beginWorking;
+        beginWorkingMutex.unlock();
+        if(begin && !prevBeginWorkng) {
+            traceRegion(buffers, scene, startRow, numRows);
+            threadComplete();
+        }
+        prevBeginWorkng = begin;
+        if(shouldExit()) {
+            return;
+        }
+        std::this_thread::sleep_for(sleepInterval);
+    }
 }
 
 void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int startRow, const int numRows) {
@@ -109,4 +157,15 @@ bool RayTracer::triangleRayIntersectionTest(const Camera* camera, const glm::vec
     }
 
     return false;
+}
+
+void RayTracer::threadComplete() {
+    std::lock_guard<std::mutex> lock(threadCompleteMutex);
+
+    completedThreads++;
+}
+
+bool RayTracer::shouldExit() {
+    std::lock_guard<std::mutex> lock(exitMutex);
+    return exit;
 }
