@@ -7,8 +7,10 @@
 
 #include <glm\glm.hpp>
 
-class Scene;
+#define ANIMATE_RAY_TRACE
+
 class RayTracer;
+class Scene;
 
 struct DisplayBuffers {
     int width, height;
@@ -18,7 +20,9 @@ struct DisplayBuffers {
 
 class Window {
 public:
-    //static Window* globalWindow;
+#ifdef ANIMATE_RAY_TRACE
+    static Window* globalWindow;
+#endif
 
     Window(int width, int height, std::string title);
     ~Window();

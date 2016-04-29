@@ -25,7 +25,7 @@ bool RayTracer::exit = false;
 
 Scene* RayTracer::scene;
 
-bool RayTracer::doDepthTest = true;
+bool RayTracer::doDepthTest = false;
 
 RayTracer::RayTracer(DisplayBuffers* buffers, int numThreads) {
     for(int i = 0; i < numThreads; i++) {
@@ -59,7 +59,9 @@ void RayTracer::render(Scene* scene) {
         bool finished = completedThreads == tracers.size();
         threadCompleteMutex.unlock();
         if(finished) break;
-        //Window::globalWindow->displayBuffers();
+        #ifdef ANIMATE_RAY_TRACE
+        Window::globalWindow->displayBuffers();
+        #endif
         std::this_thread::sleep_for(sleepInterval);
     }
     completedThreads = 0;
@@ -173,7 +175,6 @@ inline void RayTracer::updateColorBuffer(DisplayBuffers* buffers, Renderer* rend
 
 void RayTracer::threadComplete() {
     std::lock_guard<std::mutex> lock(threadCompleteMutex);
-
     completedThreads++;
 }
 

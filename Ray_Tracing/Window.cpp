@@ -8,7 +8,9 @@
 #include "Scene.h"
 #include "RayTracer.h"
 
-//Window* Window::globalWindow;
+#ifdef ANIMATE_RAY_TRACE
+Window* Window::globalWindow;
+#endif
 
 Window::Window(int width, int height, std::string title):
 title(title),
@@ -23,9 +25,11 @@ clearDepth(FLT_MAX)
     buffers->width = width;
     buffers->height = height;
 
-    rayTracer = new RayTracer(buffers, 7);
+    rayTracer = new RayTracer(buffers, 8);
 
-    //globalWindow = this;
+    #ifdef ANIMATE_RAY_TRACE
+    globalWindow = this;
+    #endif
 }
 
 Window::~Window() {
