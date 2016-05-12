@@ -16,5 +16,8 @@ public:
     virtual void handleEvent(sf::Event e);
     virtual void update();
     virtual void exit();
+
+private:
+    sf::Image* texture;
 };
 

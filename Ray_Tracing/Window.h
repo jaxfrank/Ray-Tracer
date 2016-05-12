@@ -7,7 +7,7 @@
 
 #include <glm\glm.hpp>
 
-#define ANIMATE_RAY_TRACE
+//#define ANIMATE_RAY_TRACE
 
 class RayTracer;
 class Scene;

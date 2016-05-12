@@ -4,12 +4,13 @@
 
 #include <array>
 #include <glm\glm.hpp>
+#include <SFML\Graphics.hpp>
 
 struct Triangle;
 
 class TriangleRenderer : public Renderer {
 public:
-    TriangleRenderer(Triangle* triangle, std::array<glm::vec4, 3> colors);
+    TriangleRenderer(Triangle* triangle, std::array<glm::vec4, 3> colors, sf::Image* texture, std::array<glm::vec2, 3> texCoords);
     ~TriangleRenderer();
 
 
@@ -21,6 +22,7 @@ public:
 private:
     Triangle* triangle;
     std::array<glm::vec4, 3> colors;
-
+    sf::Image* texture;
+    std::array<glm::vec2, 3> texCoords;
 };
 
