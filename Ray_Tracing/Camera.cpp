@@ -20,3 +20,7 @@ void Camera::setFOV(float fov) {
 void Camera::setScale(float fov) {
     scale = glm::tan(glm::radians(fov / 2));
 }
+
+glm::vec3 Camera::getRight() {
+    return glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f));
+}

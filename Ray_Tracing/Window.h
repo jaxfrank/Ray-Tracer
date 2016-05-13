@@ -43,6 +43,13 @@ public:
 
     void displayBuffers();
 
+    void setMouseCaptured(bool captured);
+    bool isMouseCaptured();
+
+    int getWidth() { return buffers->width; }
+    int getHeight() { return buffers->height; }
+    glm::ivec2 getPosition() { return glm::ivec2(renderWindow->getPosition().x, renderWindow->getPosition().y); }
+
 private:
     std::unordered_map<std::string, Scene*> scenes;
     Scene* currentScene;
@@ -57,6 +64,7 @@ private:
     std::string title;
     
     bool running;
+    bool mouseCaptured;
 
     glm::vec4 clearColor;
     float clearDepth;

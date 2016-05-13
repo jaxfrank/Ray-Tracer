@@ -17,6 +17,7 @@ public:
 
     glm::vec3 getForward() const { return forward; }
     void setForward(glm::vec3 forward) { this->forward = forward; }
+    glm::vec3 getRight();
 
 private:
     glm::vec3 position;

@@ -19,5 +19,7 @@ public:
 
 private:
     sf::Image* texture;
+
+    float cameraMovementSpeed = 5.0f;
 };
 

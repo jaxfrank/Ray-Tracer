@@ -3,6 +3,10 @@
 #include <thread>
 #include <vector>
 #include <chrono>
+#include <iostream>
+
+#include <glm\glm.hpp>
+#include <glm\gtx\rotate_vector.hpp>
 
 #include "Window.h"
 #include "Scene.h"
@@ -93,17 +97,15 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
     float scale = scene->getCamera()->getScale();
     float aspectRatio = (float)buffers->width / (float)buffers->height;
 
-    /* Rotate the rays?
-    glm::vec3 from_vector;
-    glm::vec3 to_vector;
-    glm::normalize(from_vector);
-    glm::normalize(to_vector);
-    float cosa = glm::dot(from_vector,to_vector);
+    // Rotate the rays?
+    glm::vec3 negZ = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 forward = glm::normalize(scene->getCamera()->getForward());
+    float cosa = glm::dot(negZ, forward);
     glm::clamp(cosa,-1.0f,1.0f);
-    glm::vec3 axis = glm::cross(from_vector,to_vector);
-    float angle = glm::degrees(glm::acos(cosa));
-    glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1),angle,axis);
-    */
+    glm::vec3 axis = glm::cross(negZ, forward);
+    float angle = glm::acos(cosa);
+    glm::mat4 rotateMatrix = glm::rotate(glm::mat4(1), angle, axis);
+    
     std::vector<Renderer*> renderers = scene->getRenderers();
     for(int rendererIndex = 0; rendererIndex < renderers.size(); rendererIndex++) {
         Renderer* renderer = renderers[rendererIndex];
@@ -111,8 +113,10 @@ void RayTracer::traceRegion(DisplayBuffers* buffers, Scene* scene, const int sta
             for(int j = startRow; j < startRow + numRows; j++) {
                 float x = (2 * (i + 0.5f) / buffers->width - 1) * aspectRatio * scale;
                 float y = (1 - 2 * (j + 0.5f) / buffers->height) * scale;
-                glm::vec3 dir(x, y, -1.0f);
-                glm::normalize(dir);
+                glm::vec4 dir4(x, y, -1.0f, 0.0f);
+                glm::normalize(dir4);
+                dir4 = rotateMatrix * dir4;
+                glm::vec3 dir = glm::normalize(glm::vec3(dir4.x, dir4.y, dir4.z));
 
                 RayIntersectionResult result;
                 for(int triangleIndex = 0; triangleIndex < renderer->getTriangleCount(); triangleIndex++) {

@@ -7,6 +7,7 @@
 
 #include "Scene.h"
 #include "RayTracer.h"
+#include "Time.h"
 
 #ifdef ANIMATE_RAY_TRACE
 Window* Window::globalWindow;
@@ -18,7 +19,8 @@ renderWindow(new sf::RenderWindow(sf::VideoMode(width, height), title)),
 buffers(new DisplayBuffers),
 running(false),
 clearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)),
-clearDepth(FLT_MAX)
+clearDepth(FLT_MAX),
+mouseCaptured(false)
 {
     buffers->colorBuffer = new sf::Uint8[width * height * 4];
     buffers->depthBuffer = new float[width * height];
@@ -78,6 +80,10 @@ void Window::loop() {
 
         currentScene->update();
 
+        if(mouseCaptured) {
+            sf::Mouse::setPosition(renderWindow->getPosition() + sf::Vector2i(getWidth() / 2, getHeight() / 2));
+        }
+
         //Clear the buffers
         clearColorBuffer(clearColor);
         clearDepthBuffer(clearDepth);
@@ -92,6 +98,7 @@ void Window::loop() {
             if(frameCount % 10 == 0)
                 std::cout << "Average FPS: " << frameRateSum / frameCount << " FPS: " << 1.0f / clock.getElapsedTime().asSeconds() << " Frame Time: " << clock.getElapsedTime().asSeconds() << std::endl;
         }
+        Time::setDeltaTime(clock.getElapsedTime().asSeconds());
         frameCount++;
         clock.restart();
     }
@@ -153,4 +160,13 @@ void Window::clearDepthBuffer(float depth) {
             buffers->depthBuffer[index] = depth;
         }
     }
+}
+
+void Window::setMouseCaptured(bool captured) {
+    //renderWindow->setMouseCursorVisible(!captured);
+    mouseCaptured = captured;
+}
+
+bool Window::isMouseCaptured() {
+    return mouseCaptured;
 }
